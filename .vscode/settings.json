@@ -1,0 +1,24 @@
+{
+    "files.associations": {
+        "vector": "cpp",
+        "type_traits": "cpp",
+        "new": "cpp",
+        "__bit_reference": "cpp",
+        "__node_handle": "cpp",
+        "bitset": "cpp",
+        "deque": "cpp",
+        "__memory": "cpp",
+        "limits": "cpp",
+        "locale": "cpp",
+        "optional": "cpp",
+        "ratio": "cpp",
+        "tuple": "cpp"
+    },
+    "cSpell.words": [
+        "clipperd",
+        "libc",
+        "pathd",
+        "pathsd",
+        "polytreed"
+    ]
+}

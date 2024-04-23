@@ -1,0 +1,3 @@
+[submodule "clipper2c"]
+	path = clipper2c
+	url = https://github.com/songhuaixu/clipper2c.git

@@ -1,0 +1,22 @@
+[package]
+name = "clipper2-sys"
+version = "0.1.0"
+authors = ["songhuaixu <songhuaixu@gmail.com>"]
+edition = "2021"
+license = "ISC"
+readme = "README.md"
+repository = "https://github.com/songhuaixu/clipper2-sys"
+description = "Boolean operations on polygons (Clipper2 wrapper)"
+keywords = ["polygon", "boolean", "clip", "clipper2"]
+categories = ["algorithms", "external-ffi-bindings"]
+
+[features]
+generate-bindings = [ "bindgen"]
+update-bindings = [ "generate-bindings"]
+
+[dependencies]
+libc = "0.2"
+
+[build-dependencies]
+bindgen = { version = "0.69.4", optional = true }
+cc = "1.0.94"
