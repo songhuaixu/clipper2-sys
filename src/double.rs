@@ -12,7 +12,7 @@ pub use clipper_d::*;
 mod poly_tree_d;
 pub use poly_tree_d::*;
 
-use crate::{clipper2::*, malloc, EndType, JoinType, Path64, Paths64};
+use crate::{clipper2::*, malloc, EndType, JoinType, Path64, Paths64, PointInPolygonResult};
 
 pub type PointD = ClipperPointD;
 
@@ -47,6 +47,10 @@ impl PathD {
             clipper_delete_pathd(path_ptr);
             path
         }
+    }
+
+    pub fn point_in_polygon(&self, point: PointD) -> PointInPolygonResult {
+        unsafe { clipper_point_in_pathd(self.get_clipper_path(), point).into() }
     }
 
     pub fn to_path64(&self) -> Path64 {

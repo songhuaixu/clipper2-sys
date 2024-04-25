@@ -148,6 +148,10 @@ pub const ClipperEndType_BUTT_END: ClipperEndType = 2;
 pub const ClipperEndType_SQUARE_END: ClipperEndType = 3;
 pub const ClipperEndType_ROUND_END: ClipperEndType = 4;
 pub type ClipperEndType = ::std::os::raw::c_uint;
+pub const ClipperPointInPolygonResult_IS_ON: ClipperPointInPolygonResult = 0;
+pub const ClipperPointInPolygonResult_IS_INSIDE: ClipperPointInPolygonResult = 1;
+pub const ClipperPointInPolygonResult_IS_OUTSIDE: ClipperPointInPolygonResult = 2;
+pub type ClipperPointInPolygonResult = ::std::os::raw::c_uint;
 extern "C" {
     pub fn clipper_paths64_inflate(
         mem: *mut ::std::os::raw::c_void,
@@ -346,6 +350,18 @@ extern "C" {
         mem: *mut ::std::os::raw::c_void,
         paths: *mut ClipperPathsD,
     ) -> *mut ClipperPaths64;
+}
+extern "C" {
+    pub fn clipper_point_in_path64(
+        path: *mut ClipperPath64,
+        pt: ClipperPoint64,
+    ) -> ClipperPointInPolygonResult;
+}
+extern "C" {
+    pub fn clipper_point_in_pathd(
+        path: *mut ClipperPathD,
+        pt: ClipperPointD,
+    ) -> ClipperPointInPolygonResult;
 }
 extern "C" {
     pub fn clipper_polytree64(

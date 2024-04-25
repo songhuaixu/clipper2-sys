@@ -68,6 +68,7 @@ fn main() {
             .allowlist_function("clipper_delete_pathd")
             .allowlist_function("clipper_pathd_simplify")
             .allowlist_function("clipper_pathd_to_path64")
+            .allowlist_function("clipper_point_in_pathd")
             // PathsD Methods
             .allowlist_function("clipper_pathsd_size")
             .allowlist_function("clipper_pathsd")
@@ -120,6 +121,7 @@ fn main() {
             .allowlist_function("clipper_delete_path64")
             .allowlist_function("clipper_path64_simplify")
             .allowlist_function("clipper_path64_to_pathd")
+            .allowlist_function("clipper_point_in_path64")
             // Paths64 Methods
             .allowlist_function("clipper_paths64_size")
             .allowlist_function("clipper_paths64")

@@ -1,13 +1,13 @@
 [package]
 name = "clipper2-sys"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["songhuaixu <songhuaixu@gmail.com>"]
 edition = "2021"
 license = "ISC"
 readme = "README.md"
 repository = "https://github.com/songhuaixu/clipper2-sys"
-description = "Boolean operations on polygons (Clipper2 wrapper)"
-keywords = ["polygon", "boolean", "clip", "clipper2"]
+description = "Polygon Clipping and Offsetting (Clipper2 wrapper)"
+keywords = ["polygon", "boolean", "clip", "offset", "clipper2"]
 categories = ["algorithms", "external-ffi-bindings"]
 
 [features]

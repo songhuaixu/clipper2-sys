@@ -53,6 +53,13 @@ pub enum EndType {
     RoundEnd,
 }
 
+#[derive(Clone, Copy)]
+pub enum PointInPolygonResult {
+    On,
+    Inside,
+    Outside,
+}
+
 impl From<ClipType> for ClipperClipType {
     fn from(value: ClipType) -> Self {
         match value {
@@ -93,6 +100,18 @@ impl From<EndType> for ClipperEndType {
             EndType::JoinedEnd => ClipperEndType_JOINED_END,
             EndType::SquaerEnd => ClipperEndType_SQUARE_END,
             EndType::RoundEnd => ClipperEndType_ROUND_END,
+        }
+    }
+}
+
+#[allow(non_upper_case_globals)]
+impl Into<PointInPolygonResult> for ClipperPointInPolygonResult {
+    fn into(self) -> PointInPolygonResult {
+        match self {
+            ClipperPointInPolygonResult_IS_ON => PointInPolygonResult::On,
+            ClipperPointInPolygonResult_IS_INSIDE => PointInPolygonResult::Inside,
+            ClipperPointInPolygonResult_IS_OUTSIDE => PointInPolygonResult::Outside,
+            _ => panic!("Not Supported")
         }
     }
 }
