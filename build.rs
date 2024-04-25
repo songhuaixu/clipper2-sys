@@ -26,7 +26,7 @@ fn main() {
             "clipper2c/src/polytree.cpp",
             "clipper2c/src/rect.cpp",
             "clipper2c/src/svg.cpp",
-            ])
+        ])
         .flag_if_supported("-std=c++17")
         .compile("Clipper2");
 
@@ -34,7 +34,9 @@ fn main() {
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
 
     match (target_os.as_str(), target_env.as_str()) {
-        ("linux", _) | ("windows", "gnu") |  ("android", _)  => println!("cargo:rustc-link-lib=dylib=stdc++"),
+        ("linux", _) | ("windows", "gnu") | ("android", _) => {
+            println!("cargo:rustc-link-lib=dylib=stdc++")
+        }
         ("macos", _) | ("ios", _) => println!("cargo:rustc-link-lib=dylib=c++"),
         ("windows", "msvc") => {}
         _ => unimplemented!(
@@ -56,7 +58,6 @@ fn main() {
             .allowlist_type("ClipperPointD")
             .allowlist_type("ClipperFillRule")
             .allowlist_type("ClipperClipType")
-
             // PathD Methods
             .allowlist_function("clipper_pathd_size")
             .allowlist_function("clipper_pathd")
@@ -65,19 +66,22 @@ fn main() {
             .allowlist_function("clipper_pathd_length")
             .allowlist_function("clipper_pathd_get_point")
             .allowlist_function("clipper_delete_pathd")
-            
+            .allowlist_function("clipper_pathd_simplify")
+            .allowlist_function("clipper_pathd_to_path64")
             // PathsD Methods
             .allowlist_function("clipper_pathsd_size")
             .allowlist_function("clipper_pathsd")
             .allowlist_function("clipper_pathsd_of_paths")
             .allowlist_function("clipper_pathsd_add_path")
             .allowlist_function("clipper_pathsd_add_paths")
-            .allowlist_function("clipper_pathsd_get_path")   
-            .allowlist_function("clipper_pathsd_get_point")         
+            .allowlist_function("clipper_pathsd_get_path")
+            .allowlist_function("clipper_pathsd_get_point")
             .allowlist_function("clipper_pathsd_length")
             .allowlist_function("clipper_pathsd_path_length")
-            .allowlist_function("clipper_delete_pathsd")            
-
+            .allowlist_function("clipper_delete_pathsd")
+            .allowlist_function("clipper_pathsd_simplify")
+            .allowlist_function("clipper_pathsd_inflate")
+            .allowlist_function("clipper_pathsd_to_paths64")
             // ClipperD Methods
             .allowlist_function("clipper_clipperd_size")
             .allowlist_function("clipper_clipperd")
@@ -86,8 +90,12 @@ fn main() {
             .allowlist_function("clipper_clipperd_add_clip")
             .allowlist_function("clipper_clipperd_execute")
             .allowlist_function("clipper_clipperd_execute_tree_with_open")
+            .allowlist_function("clipper_clipperd_set_preserve_collinear")
+            .allowlist_function("clipper_clipperd_get_preserve_collinear")
+            .allowlist_function("clipper_clipperd_set_reverse_solution")
+            .allowlist_function("clipper_clipperd_get_reverse_solution")
+            .allowlist_function("clipper_clipperd_clear")
             .allowlist_function("clipper_delete_clipperd")
-
             // PolyTreeD Methods
             .allowlist_function("clipper_polytreed_size")
             .allowlist_function("clipper_polytreed")
@@ -102,7 +110,75 @@ fn main() {
             .allowlist_function("clipper_polytreed_area")
             .allowlist_function("clipper_polytreed_to_paths")
             .allowlist_function("clipper_delete_polytreed")
-
+            // Path64 Methods
+            .allowlist_function("clipper_path64_size")
+            .allowlist_function("clipper_path64")
+            .allowlist_function("clipper_path64_of_points")
+            .allowlist_function("clipper_path64_add_point")
+            .allowlist_function("clipper_path64_length")
+            .allowlist_function("clipper_path64_get_point")
+            .allowlist_function("clipper_delete_path64")
+            .allowlist_function("clipper_path64_simplify")
+            .allowlist_function("clipper_path64_to_pathd")
+            // Paths64 Methods
+            .allowlist_function("clipper_paths64_size")
+            .allowlist_function("clipper_paths64")
+            .allowlist_function("clipper_paths64_of_paths")
+            .allowlist_function("clipper_paths64_add_path")
+            .allowlist_function("clipper_paths64_add_paths")
+            .allowlist_function("clipper_paths64_get_path")
+            .allowlist_function("clipper_paths64_get_point")
+            .allowlist_function("clipper_paths64_length")
+            .allowlist_function("clipper_paths64_path_length")
+            .allowlist_function("clipper_delete_paths64")
+            .allowlist_function("clipper_paths64_simplify")
+            .allowlist_function("clipper_paths64_inflate")
+            .allowlist_function("clipper_paths64_to_pathsd")
+            // ClipperD Methods
+            .allowlist_function("clipper_clipper64_size")
+            .allowlist_function("clipper_clipper64")
+            .allowlist_function("clipper_clipper64_add_subject")
+            .allowlist_function("clipper_clipper64_add_open_subject")
+            .allowlist_function("clipper_clipper64_add_clip")
+            .allowlist_function("clipper_clipper64_execute")
+            .allowlist_function("clipper_clipper64_execute_tree_with_open")
+            .allowlist_function("clipper_clipper64_set_preserve_collinear")
+            .allowlist_function("clipper_clipper64_get_preserve_collinear")
+            .allowlist_function("clipper_clipper64_set_reverse_solution")
+            .allowlist_function("clipper_clipper64_get_reverse_solution")
+            .allowlist_function("clipper_clipper64_clear")
+            .allowlist_function("clipper_delete_clipper64")
+            // PolyTreeD Methods
+            .allowlist_function("clipper_polytree64_size")
+            .allowlist_function("clipper_polytree64")
+            .allowlist_function("clipper_polytree64_parent")
+            .allowlist_function("clipper_polytree64_count")
+            .allowlist_function("clipper_polytree64_get_child")
+            .allowlist_function("clipper_polytree64_set_inv_scale")
+            .allowlist_function("clipper_polytree64_inv_scale")
+            .allowlist_function("clipper_polytree64_add_child")
+            .allowlist_function("clipper_polytree64_is_hole")
+            .allowlist_function("clipper_polytree64_polygon")
+            .allowlist_function("clipper_polytree64_area")
+            .allowlist_function("clipper_polytree64_to_paths")
+            .allowlist_function("clipper_delete_polytree64")
+            // ClipperOffset Methods
+            .allowlist_function("clipper_clipperoffset_size")
+            .allowlist_function("clipper_clipperoffset")
+            .allowlist_function("clipper_clipperoffset_set_miter_limit")
+            .allowlist_function("clipper_clipperoffset_set_arc_tolerance")
+            .allowlist_function("clipper_clipperoffset_set_preserve_collinear")
+            .allowlist_function("clipper_clipperoffset_set_reverse_solution")
+            .allowlist_function("clipper_clipperoffset_get_miter_limit")
+            .allowlist_function("clipper_clipperoffset_get_arc_tolerance")
+            .allowlist_function("clipper_clipperoffset_get_preserve_collinear")
+            .allowlist_function("clipper_clipperoffset_get_reverse_solution")
+            .allowlist_function("clipper_clipperoffset_error_code")
+            .allowlist_function("clipper_clipperoffset_clear")
+            .allowlist_function("clipper_clipperoffset_add_path64")
+            .allowlist_function("clipper_clipperoffset_add_paths64")
+            .allowlist_function("clipper_clipperoffset_execute")
+            .allowlist_function("clipper_delete_clipperoffset")
             .size_t_is_usize(true)
             .generate()
             .expect("unable to generate bindings");

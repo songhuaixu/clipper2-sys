@@ -1,15 +1,17 @@
 mod clipper2;
-mod clipper_d;
-mod path_d;
-mod paths_d;
-mod poly_tree_d;
 pub(crate) use clipper2::*;
-pub use clipper_d::*;
-pub use path_d::*;
-pub use paths_d::*;
-pub use poly_tree_d::*;
+
+mod clipper_offset;
+pub use clipper_offset::*;
+
+mod double;
+pub use double::*;
+
+mod int64;
+pub use int64::*;
 
 pub type PointD = ClipperPointD;
+pub type Point64 = ClipperPoint64;
 
 #[cfg(test)]
 mod tests;
@@ -39,9 +41,24 @@ pub enum ClipType {
     Xor,
 }
 
+#[derive(Clone, Copy)]
+pub enum JoinType {
+    SquaerJoin,
+    RoundJoin,
+    MiterJoin,
+}
+
+#[derive(Clone, Copy)]
+pub enum EndType {
+    PolygonEnd,
+    JoinedEnd,
+    SquaerEnd,
+    RoundEnd,
+}
+
 impl From<ClipType> for ClipperClipType {
-    fn from(pft: ClipType) -> Self {
-        match pft {
+    fn from(value: ClipType) -> Self {
+        match value {
             ClipType::None => ClipperClipType_NONE,
             ClipType::Intersection => ClipperClipType_INTERSECTION,
             ClipType::Union => ClipperClipType_UNION,
@@ -52,8 +69,8 @@ impl From<ClipType> for ClipperClipType {
 }
 
 impl From<FillRule> for ClipperFillRule {
-    fn from(pft: FillRule) -> Self {
-        match pft {
+    fn from(value: FillRule) -> Self {
+        match value {
             FillRule::EvenOdd => ClipperFillRule_EVEN_ODD,
             FillRule::NonZero => ClipperFillRule_NON_ZERO,
             FillRule::Positive => ClipperFillRule_POSITIVE,
@@ -62,49 +79,23 @@ impl From<FillRule> for ClipperFillRule {
     }
 }
 
-impl PathD {
-    pub(crate) fn from(ptr: *mut ClipperPathD) -> Self {
-        let points = unsafe {
-            let len: i32 = clipper_pathd_length(ptr).try_into().unwrap();
-            (0..len).map(|i| clipper_pathd_get_point(ptr, i)).collect()
-        };
-        Self::new(&points)
-    }
-
-    pub(crate) fn get_clipper_path(&self) -> *mut ClipperPathD {
-        unsafe {
-            let mem = malloc(clipper_pathd_size());
-            clipper_pathd_of_points(mem, self.0.clone().as_mut_ptr(), self.len())
+impl From<JoinType> for ClipperJoinType {
+    fn from(value: JoinType) -> Self {
+        match value {
+            JoinType::SquaerJoin => ClipperJoinType_SQUARE_JOIN,
+            JoinType::RoundJoin => ClipperJoinType_ROUND_JOIN,
+            JoinType::MiterJoin => ClipperJoinType_MITER_JOIN,
         }
     }
 }
 
-impl PathsD {
-    pub(crate) fn from(ptr: *mut ClipperPathsD) -> Self {
-        let paths = unsafe {
-            let len: i32 = clipper_pathsd_length(ptr).try_into().unwrap();
-            (0..len)
-                .map(|i| {
-                    let point_len: i32 = clipper_pathsd_path_length(ptr, i).try_into().unwrap();
-                    let points = (0..point_len)
-                        .map(|j| clipper_pathsd_get_point(ptr, i, j))
-                        .collect();
-                    PathD::new(&points)
-                })
-                .collect()
-        };
-        Self::new(&paths)
-    }
-
-    pub(crate) fn get_clipper_paths(&self) -> *mut ClipperPathsD {
-        unsafe {
-            let mem = malloc(clipper_pathsd_size());
-            let mut paths = self
-                .0
-                .iter()
-                .map(|p| p.get_clipper_path())
-                .collect::<Vec<*mut ClipperPathD>>();
-            clipper_pathsd_of_paths(mem, paths.as_mut_ptr(), self.len())
+impl From<EndType> for ClipperEndType {
+    fn from(value: EndType) -> Self {
+        match value {
+            EndType::PolygonEnd => ClipperEndType_POLYGON_END,
+            EndType::JoinedEnd => ClipperEndType_JOINED_END,
+            EndType::SquaerEnd => ClipperEndType_SQUARE_END,
+            EndType::RoundEnd => ClipperEndType_ROUND_END,
         }
     }
 }

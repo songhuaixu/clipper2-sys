@@ -1,4 +1,4 @@
-# clipper-sys
+# clipper2-sys
 
 Unsafe Rust wrapper around C++ version of [Clipper2](https://github.com/AngusJohnson/Clipper2).
 

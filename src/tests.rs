@@ -1,13 +1,12 @@
 #[cfg(test)]
 mod tests {
-    use crate::{ClipperD, ClipperPathD, PathD, PathsD, PointD};
-
+    use crate::*;
 
     #[test]
     fn test_path_d_work() {
         let size = std::mem::align_of::<ClipperPathD>();
-        println!("{:?}",size);
-        let point = PointD {x: 0.0, y: 0.0};
+        println!("{:?}", size);
+        let point = PointD { x: 0.0, y: 0.0 };
         let mut path = PathD::new(&vec![]);
         path.add_point(point);
         assert_eq!(path.len(), 1);
@@ -18,8 +17,8 @@ mod tests {
     #[test]
     fn test_paths_d_work() {
         let size = std::mem::align_of::<ClipperPathD>();
-        println!("{:?}",size);
-        let point = PointD {x: 0.0, y: 0.0};
+        println!("{:?}", size);
+        let point = PointD { x: 0.0, y: 0.0 };
 
         let mut path = PathD::new(&vec![]);
         path.add_point(point);
@@ -35,19 +34,19 @@ mod tests {
     fn test_clipper_union_work() {
         let clipper = ClipperD::new(2);
         let mut path = PathD::new(&vec![
-            PointD {x: 0.0, y: 0.0},
-            PointD {x: 0.0, y: 10.0},
-            PointD {x: 10.0, y: 10.0},
-            PointD {x: 10.0, y: 0.0},
+            PointD { x: 0.0, y: 0.0 },
+            PointD { x: 0.0, y: 10.0 },
+            PointD { x: 10.0, y: 10.0 },
+            PointD { x: 10.0, y: 0.0 },
         ]);
 
         let mut paths = PathsD::new(&vec![]);
         paths.add_path(path);
         paths.add_path(PathD::new(&vec![
-            PointD {x: 20.0, y: 0.0},
-            PointD {x: 20.0, y: 10.0},
-            PointD {x: 30.0, y: 10.0},
-            PointD {x: 30.0, y: 0.0},
+            PointD { x: 20.0, y: 0.0 },
+            PointD { x: 20.0, y: 10.0 },
+            PointD { x: 30.0, y: 10.0 },
+            PointD { x: 30.0, y: 0.0 },
         ]));
         println!("paths: {:?}", paths);
         clipper.add_subject(paths);
@@ -61,7 +60,7 @@ mod tests {
         // ]));
 
         // clipper.add_clip(clip_paths);
-        let result = clipper.boolean_operation(crate::ClipType::Union, crate::FillRule::NonZero);        
+        let result = clipper.boolean_operation(crate::ClipType::Union, crate::FillRule::NonZero);
         println!("result: {:?}", result);
     }
 
@@ -69,19 +68,19 @@ mod tests {
     fn test_clipper_union_tree_work() {
         let clipper = ClipperD::new(2);
         let mut path = PathD::new(&vec![
-            PointD {x: 0.0, y: 0.0},
-            PointD {x: 0.0, y: 10.0},
-            PointD {x: 10.0, y: 10.0},
-            PointD {x: 10.0, y: 0.0},
+            PointD { x: 0.0, y: 0.0 },
+            PointD { x: 0.0, y: 10.0 },
+            PointD { x: 10.0, y: 10.0 },
+            PointD { x: 10.0, y: 0.0 },
         ]);
 
         let mut paths = PathsD::new(&vec![]);
         paths.add_path(path);
         paths.add_path(PathD::new(&vec![
-            PointD {x: 20.0, y: 0.0},
-            PointD {x: 20.0, y: 10.0},
-            PointD {x: 30.0, y: 10.0},
-            PointD {x: 30.0, y: 0.0},
+            PointD { x: 20.0, y: 0.0 },
+            PointD { x: 20.0, y: 10.0 },
+            PointD { x: 30.0, y: 10.0 },
+            PointD { x: 30.0, y: 0.0 },
         ]));
         println!("paths: {:?}", paths);
         clipper.add_subject(paths);
@@ -95,8 +94,8 @@ mod tests {
         // ]));
 
         // clipper.add_clip(clip_paths);
-        let result = clipper.boolean_operation_tree(crate::ClipType::Union, crate::FillRule::NonZero);        
+        let result =
+            clipper.boolean_operation_tree(crate::ClipType::Union, crate::FillRule::NonZero);
         println!("result: {:?}", result);
     }
-
 }

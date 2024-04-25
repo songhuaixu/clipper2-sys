@@ -1,11 +1,11 @@
-use std::sync::{Arc, Mutex};
-
-use libc::c_int;
+use std::os::raw::c_int;
 
 use crate::{
     clipper_clipperd, clipper_clipperd_add_clip, clipper_clipperd_add_open_subject,
-    clipper_clipperd_add_subject, clipper_clipperd_execute,
-    clipper_clipperd_execute_tree_with_open, clipper_clipperd_size, clipper_delete_clipperd,
+    clipper_clipperd_add_subject, clipper_clipperd_clear, clipper_clipperd_execute,
+    clipper_clipperd_execute_tree_with_open, clipper_clipperd_get_preserve_collinear,
+    clipper_clipperd_get_reverse_solution, clipper_clipperd_set_preserve_collinear,
+    clipper_clipperd_set_reverse_solution, clipper_clipperd_size, clipper_delete_clipperd,
     clipper_delete_pathsd, clipper_delete_polytreed, clipper_polytreed, clipper_polytreed_size,
     malloc, ClipType, ClipperClipperD, FillRule, PathsD, PolyTreeD,
 };
@@ -21,6 +21,26 @@ impl ClipperD {
             clipper_clipperd(mem, precision)
         };
         Self { ptr: ptr }
+    }
+
+    pub fn set_preserve_collinear(&self, value: bool) {
+        unsafe { clipper_clipperd_set_preserve_collinear(self.ptr, if value { 1 } else { 0 }) }
+    }
+
+    pub fn get_preserve_collinear(&self) -> bool {
+        unsafe { clipper_clipperd_get_preserve_collinear(self.ptr) == 1 }
+    }
+
+    pub fn set_reverse_solution(&self, value: bool) {
+        unsafe { clipper_clipperd_set_reverse_solution(self.ptr, if value { 1 } else { 0 }) }
+    }
+
+    pub fn get_reverse_solution(&self) -> bool {
+        unsafe { clipper_clipperd_get_reverse_solution(self.ptr) == 1 }
+    }
+
+    pub fn clear(&self) {
+        unsafe { clipper_clipperd_clear(self.ptr) }
     }
 
     pub fn add_open_subject(&self, open_subject: PathsD) {

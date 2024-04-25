@@ -1,6 +1,6 @@
 [package]
 name = "clipper2-sys"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["songhuaixu <songhuaixu@gmail.com>"]
 edition = "2021"
 license = "ISC"
