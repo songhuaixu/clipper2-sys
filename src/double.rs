@@ -12,7 +12,9 @@ pub use clipper_d::*;
 mod poly_tree_d;
 pub use poly_tree_d::*;
 
-use crate::{clipper2::*, malloc, EndType, JoinType};
+use crate::{clipper2::*, malloc, EndType, JoinType, Path64, Paths64};
+
+pub type PointD = ClipperPointD;
 
 impl PathD {
     pub(crate) fn from(ptr: *mut ClipperPathD) -> Self {
@@ -44,6 +46,16 @@ impl PathD {
             let path = Self::from(path_ptr);
             clipper_delete_pathd(path_ptr);
             path
+        }
+    }
+
+    pub fn to_path64(&self) -> Path64 {
+        unsafe {
+            let mem = malloc(clipper_path64_size());
+            let path64_ptr = clipper_pathd_to_path64(mem, self.get_clipper_path());
+            let path64 = Path64::from(path64_ptr);
+            clipper_delete_path64(path64_ptr);
+            path64
         }
     }
 }
@@ -116,6 +128,16 @@ impl PathsD {
             let paths = Self::from(paths_ptr);
             clipper_delete_pathsd(paths_ptr);
             paths
+        }
+    }
+
+    pub fn to_paths64(&self) -> Paths64 {
+        unsafe {
+            let mem = malloc(clipper_paths64_size());
+            let paths64_ptr = clipper_pathsd_to_paths64(mem, self.get_clipper_paths());
+            let paths64 = Paths64::from(paths64_ptr);
+            clipper_delete_paths64(paths64_ptr);
+            paths64
         }
     }
 }

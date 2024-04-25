@@ -10,9 +10,6 @@ pub use double::*;
 mod int64;
 pub use int64::*;
 
-pub type PointD = ClipperPointD;
-pub type Point64 = ClipperPoint64;
-
 #[cfg(test)]
 mod tests;
 
