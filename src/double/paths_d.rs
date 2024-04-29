@@ -27,8 +27,18 @@ impl PathsD {
     pub fn add_paths(&mut self, mut paths: Vec<PathD>) {
         self.0.append(&mut paths)
     }
-    
+
     pub fn get_paths(&self) -> Vec<PathD> {
         self.0.clone()
+    }
+
+    pub fn translate(&self, dx: f64, dy: f64) -> Self {
+        let new_paths = self.0.iter().map(|p| p.translate(dx, dy)).collect();
+        Self(new_paths)
+    }
+
+    pub fn scale(&self, sx: f64, sy: f64) -> Self {
+        let new_paths = self.0.iter().map(|p| p.scale(sx, sy)).collect();
+        Self(new_paths)
     }
 }

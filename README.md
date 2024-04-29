@@ -1,6 +1,6 @@
 # clipper2-sys
 
-Unsafe Rust wrapper around C++ version of [Clipper2](https://github.com/AngusJohnson/Clipper2).
+Rust wrapper around C++ version of [Clipper2](https://github.com/AngusJohnson/Clipper2).
 
 Compile with cargo feature `generate-bindings` to generate bindings at build time.
 

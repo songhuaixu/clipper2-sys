@@ -31,4 +31,14 @@ impl Paths64 {
     pub fn get_paths(&self) -> Vec<Path64> {
         self.0.clone()
     }
+
+    pub fn translate(&self, dx: i64, dy: i64) -> Self {
+        let new_paths = self.0.iter().map(|p| p.translate(dx, dy)).collect();
+        Self(new_paths)
+    }
+
+    pub fn scale(&self, sx: f64, sy: f64) -> Self {
+        let new_paths = self.0.iter().map(|p| p.scale(sx, sy)).collect();
+        Self(new_paths)
+    }
 }
