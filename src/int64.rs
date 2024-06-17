@@ -14,6 +14,12 @@ use crate::{clipper2::*, malloc, EndType, JoinType, PathD, PathsD, PointInPolygo
 
 pub type Point64 = ClipperPoint64;
 
+impl Point64 {
+    pub fn new(x: i64, y: i64) -> Self {
+        Self { x: x, y: y }
+    }
+}
+
 impl Path64 {
     pub(crate) fn from(ptr: *mut ClipperPath64) -> Self {
         let points = unsafe {

@@ -16,6 +16,12 @@ use crate::{clipper2::*, malloc, EndType, JoinType, Path64, Paths64, PointInPoly
 
 pub type PointD = ClipperPointD;
 
+impl PointD {
+    pub fn new(x: f64, y: f64) -> Self {
+        Self { x: x, y: y }
+    }
+}
+
 impl PathD {
     pub(crate) fn from(ptr: *mut ClipperPathD) -> Self {
         let points = unsafe {
