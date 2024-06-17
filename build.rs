@@ -10,14 +10,13 @@ fn main() {
         .cpp(true)
         .opt_level(3)
         .include("clipper2c/vendor/Clipper2/CPP/Clipper2Lib/include/")
-        .include("clipper2c/vendor/Clipper2/CPP/Utils/")
+        // .include("clipper2c/vendor/Clipper2/CPP/Utils/")
         .include("clipper2c/include")
         .include("clipper2c/src")
         .files([
             "clipper2c/vendor/Clipper2/CPP/Clipper2Lib/src/clipper.engine.cpp",
             "clipper2c/vendor/Clipper2/CPP/Clipper2Lib/src/clipper.offset.cpp",
             "clipper2c/vendor/Clipper2/CPP/Clipper2Lib/src/clipper.rectclip.cpp",
-            "clipper2c/vendor/Clipper2/CPP/Utils/clipper.svg.cpp",
             "clipper2c/src/clipper2c.cpp",
             "clipper2c/src/clipper64.cpp",
             "clipper2c/src/clipperd.cpp",
@@ -25,8 +24,10 @@ fn main() {
             "clipper2c/src/conv.cpp",
             "clipper2c/src/polytree.cpp",
             "clipper2c/src/rect.cpp",
-            "clipper2c/src/svg.cpp",
+            // "clipper2c/vendor/Clipper2/CPP/Utils/clipper.svg.cpp",
+            // "clipper2c/src/svg.cpp",
         ])
+        .flag_if_supported("-std:c++17") // MSVC
         .flag_if_supported("-std=c++17")
         .compile("Clipper2");
 
