@@ -5,8 +5,8 @@ use crate::{
     clipper_clipperoffset_get_preserve_collinear, clipper_clipperoffset_get_reverse_solution,
     clipper_clipperoffset_set_arc_tolerance, clipper_clipperoffset_set_miter_limit,
     clipper_clipperoffset_set_preserve_collinear, clipper_clipperoffset_set_reverse_solution,
-    clipper_clipperoffset_size, clipper_delete_clipperoffset, clipper_delete_paths64, malloc,
-    ClipperClipperOffset, EndType, JoinType, Path64, Paths64,
+    clipper_clipperoffset_size, clipper_delete_clipperoffset, clipper_delete_path64,
+    clipper_delete_paths64, malloc, ClipperClipperOffset, EndType, JoinType, Path64, Paths64,
 };
 
 pub struct ClipperOffset {
@@ -35,23 +35,22 @@ impl ClipperOffset {
 
     pub fn add_path(&self, path: Path64, join_type: JoinType, end_type: EndType) {
         unsafe {
-            clipper_clipperoffset_add_path64(
-                self.ptr,
-                path.get_clipper_path(),
-                join_type.into(),
-                end_type.into(),
-            )
+            let path_prt = path.get_clipper_path();
+            clipper_clipperoffset_add_path64(self.ptr, path_prt, join_type.into(), end_type.into());
+            clipper_delete_path64(path_prt);
         }
     }
 
     pub fn add_paths(&self, paths: Paths64, join_type: JoinType, end_type: EndType) {
         unsafe {
+            let path_prt = paths.get_clipper_paths();
             clipper_clipperoffset_add_paths64(
                 self.ptr,
-                paths.get_clipper_paths(),
+                path_prt,
                 join_type.into(),
                 end_type.into(),
-            )
+            );
+            clipper_delete_paths64(path_prt);
         }
     }
 

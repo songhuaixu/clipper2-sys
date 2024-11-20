@@ -44,15 +44,27 @@ impl ClipperD {
     }
 
     pub fn add_open_subject(&self, open_subject: PathsD) {
-        unsafe { clipper_clipperd_add_open_subject(self.ptr, open_subject.get_clipper_paths()) }
+        unsafe {
+            let path_prt = open_subject.get_clipper_paths();
+            clipper_clipperd_add_open_subject(self.ptr, path_prt);
+            clipper_delete_pathsd(path_prt);
+        }
     }
 
     pub fn add_subject(&self, subject: PathsD) {
-        unsafe { clipper_clipperd_add_subject(self.ptr, subject.get_clipper_paths()) }
+        unsafe {
+            let path_prt = subject.get_clipper_paths();
+            clipper_clipperd_add_subject(self.ptr, path_prt);
+            clipper_delete_pathsd(path_prt);
+        }
     }
 
     pub fn add_clip(&self, clip: PathsD) {
-        unsafe { clipper_clipperd_add_clip(self.ptr, clip.get_clipper_paths()) }
+        unsafe {
+            let path_prt = clip.get_clipper_paths();
+            clipper_clipperd_add_clip(self.ptr, path_prt);
+            clipper_delete_pathsd(path_prt);
+        }
     }
 
     pub fn boolean_operation(&self, clip_type: ClipType, fill_rule: FillRule) -> PathsD {

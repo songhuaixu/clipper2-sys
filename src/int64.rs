@@ -212,7 +212,6 @@ impl Paths64 {
         &self,
         pattern: &Path64,
         is_closed: bool,
-
         fillrule: ClipperFillRule,
     ) -> Paths64 {
         unsafe {
