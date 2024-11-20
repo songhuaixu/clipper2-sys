@@ -40,29 +40,38 @@ impl Path64 {
 impl Path64 {
     pub fn simplify(&self, epsilon: f64, is_open_path: bool) -> Path64 {
         unsafe {
-            let mem = malloc(clipper_path64_size());
+            let mem: *mut std::ffi::c_void = malloc(clipper_path64_size());
+            let path_ptr = self.get_clipper_path();
             let path_ptr = clipper_path64_simplify(
                 mem,
-                self.get_clipper_path(),
+                path_ptr,
                 epsilon,
                 if is_open_path { 1 } else { 0 },
             );
             let path = Self::from(path_ptr);
+            clipper_delete_path64(path_ptr);
             clipper_delete_path64(path_ptr);
             path
         }
     }
 
     pub fn point_in_polygon(&self, point: Point64) -> PointInPolygonResult {
-        unsafe { clipper_point_in_path64(self.get_clipper_path(), point).into() }
+        unsafe {
+            let path_ptr = self.get_clipper_path();
+            let result = clipper_point_in_path64(path_ptr, point).into();
+            clipper_delete_path64(path_ptr);
+            result
+        }
     }
 
     pub fn to_pathd(&self) -> PathD {
         unsafe {
             let mem = malloc(clipper_pathd_size());
-            let pathd_ptr = clipper_path64_to_pathd(mem, self.get_clipper_path());
+            let path_ptr = self.get_clipper_path();
+            let pathd_ptr = clipper_path64_to_pathd(mem, path_ptr);
             let pathd = PathD::from(pathd_ptr);
             clipper_delete_pathd(pathd_ptr);
+            clipper_delete_path64(path_ptr);
             pathd
         }
     }
@@ -93,7 +102,11 @@ impl Paths64 {
                 .iter()
                 .map(|p| p.get_clipper_path())
                 .collect::<Vec<*mut ClipperPath64>>();
-            clipper_paths64_of_paths(mem, paths.as_mut_ptr(), self.len())
+            let result = clipper_paths64_of_paths(mem, paths.as_mut_ptr(), self.len());
+            for prt in paths {
+                clipper_delete_path64(prt);
+            }
+            result
         }
     }
 }
@@ -102,14 +115,12 @@ impl Paths64 {
     pub fn simplify(&self, epsilon: f64, is_open_path: bool) -> Paths64 {
         unsafe {
             let mem = malloc(clipper_paths64_size());
-            let paths_ptr = clipper_paths64_simplify(
-                mem,
-                self.get_clipper_paths(),
-                epsilon,
-                if is_open_path { 1 } else { 0 },
-            );
+            let path_prt = self.get_clipper_paths();
+            let paths_ptr =
+                clipper_paths64_simplify(mem, path_prt, epsilon, if is_open_path { 1 } else { 0 });
             let paths = Self::from(paths_ptr);
             clipper_delete_paths64(paths_ptr);
+            clipper_delete_paths64(path_prt);
             paths
         }
     }
@@ -123,9 +134,10 @@ impl Paths64 {
     ) -> Paths64 {
         unsafe {
             let mem = malloc(clipper_paths64_size());
+            let path_prt = self.get_clipper_paths();
             let paths_ptr = clipper_paths64_inflate(
                 mem,
-                self.get_clipper_paths(),
+                path_prt,
                 delta,
                 join_type.into(),
                 end_type.into(),
@@ -133,6 +145,7 @@ impl Paths64 {
             );
             let paths = Self::from(paths_ptr);
             clipper_delete_paths64(paths_ptr);
+            clipper_delete_paths64(path_prt);
             paths
         }
     }
@@ -140,10 +153,111 @@ impl Paths64 {
     pub fn to_pathsd(&self) -> PathsD {
         unsafe {
             let mem = malloc(clipper_pathd_size());
-            let pathsd_ptr = clipper_paths64_to_pathsd(mem, self.get_clipper_paths());
+            let paths_ptr = self.get_clipper_paths();
+            let pathsd_ptr = clipper_paths64_to_pathsd(mem, paths_ptr);
             let pathsd = PathsD::from(pathsd_ptr);
             clipper_delete_pathsd(pathsd_ptr);
+            clipper_delete_paths64(paths_ptr);
             pathsd
+        }
+    }
+}
+
+// Minkowski
+
+impl Path64 {
+    pub fn minkowski_sum(&self, pattern: &Path64, is_closed: bool) -> Paths64 {
+        unsafe {
+            let pattern_ptr = pattern.get_clipper_path();
+            let path_ptr = self.get_clipper_path();
+
+            let mem = malloc(clipper_paths64_size());
+            let result_prt = clipper_path64_minkowski_sum(
+                mem,
+                pattern_ptr,
+                path_ptr,
+                if is_closed { 1 } else { 0 },
+            );
+            let result = Paths64::from(result_prt);
+            clipper_delete_paths64(result_prt);
+            clipper_delete_path64(pattern_ptr);
+            clipper_delete_path64(path_ptr);
+            result
+        }
+    }
+
+    pub fn minkowski_diff(&self, pattern: &Path64, is_closed: bool) -> Paths64 {
+        unsafe {
+            let pattern_ptr = pattern.get_clipper_path();
+            let path_ptr = self.get_clipper_path();
+
+            let mem = malloc(clipper_paths64_size());
+            let result_prt = clipper_path64_minkowski_diff(
+                mem,
+                pattern_ptr,
+                path_ptr,
+                if is_closed { 1 } else { 0 },
+            );
+            let result = Paths64::from(result_prt);
+            clipper_delete_paths64(result_prt);
+            clipper_delete_path64(pattern_ptr);
+            clipper_delete_path64(path_ptr);
+            result
+        }
+    }
+}
+
+impl Paths64 {
+    pub fn minkowski_sum(
+        &self,
+        pattern: &Path64,
+        is_closed: bool,
+
+        fillrule: ClipperFillRule,
+    ) -> Paths64 {
+        unsafe {
+            let pattern_ptr = pattern.get_clipper_path();
+            let paths_ptr = self.get_clipper_paths();
+
+            let mem = malloc(clipper_paths64_size());
+            let result_prt = clipper_paths64_minkowski_sum(
+                mem,
+                pattern_ptr,
+                paths_ptr,
+                if is_closed { 1 } else { 0 },
+                fillrule.into(),
+            );
+            let result = Paths64::from(result_prt);
+            clipper_delete_paths64(result_prt);
+            clipper_delete_path64(pattern_ptr);
+            clipper_delete_paths64(paths_ptr);
+            result
+        }
+    }
+
+    pub fn minkowski_diff(
+        &self,
+        pattern: &Path64,
+        is_closed: bool,
+        fillrule: ClipperFillRule,
+    ) -> Paths64 {
+        unsafe {
+            let pattern_ptr = pattern.get_clipper_path();
+            let paths_ptr = self.get_clipper_paths();
+
+            let mem = malloc(clipper_paths64_size());
+            let result_prt = clipper_paths64_minkowski_diff(
+                mem,
+                pattern_ptr,
+                paths_ptr,
+                if is_closed { 1 } else { 0 },
+                fillrule.into(),
+            );
+            let result = Paths64::from(result_prt);
+            clipper_delete_paths64(result_prt);
+            clipper_delete_path64(pattern_ptr);
+            clipper_delete_paths64(paths_ptr);
+            result
         }
     }
 }

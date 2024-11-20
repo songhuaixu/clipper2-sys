@@ -182,6 +182,23 @@ fn main() {
             .allowlist_function("clipper_clipperoffset_add_paths64")
             .allowlist_function("clipper_clipperoffset_execute")
             .allowlist_function("clipper_delete_clipperoffset")
+
+            // Path64 Minkowski
+            .allowlist_function("clipper_path64_minkowski_sum")
+            .allowlist_function("clipper_path64_minkowski_diff")
+
+            // Paths64 Minkowski
+            .allowlist_function("clipper_paths64_minkowski_sum")
+            .allowlist_function("clipper_paths64_minkowski_diff")
+
+            // Pathd Minkowski
+            .allowlist_function("clipper_pathd_minkowski_sum")
+            .allowlist_function("clipper_pathd_minkowski_diff")
+
+            // Pathsd Minkowski
+            .allowlist_function("clipper_pathsd_minkowski_sum")
+            .allowlist_function("clipper_pathsd_minkowski_diff")
+
             .size_t_is_usize(true)
             .generate()
             .expect("unable to generate bindings");

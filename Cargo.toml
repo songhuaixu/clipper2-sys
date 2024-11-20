@@ -15,8 +15,8 @@ generate-bindings = [ "bindgen"]
 update-bindings = [ "generate-bindings"]
 
 [dependencies]
-libc = "0.2"
+libc = "0.2.164"
 
 [build-dependencies]
-bindgen = { version = "0.69.4", optional = true }
-cc = "1.0.94"
+bindgen = { version = "0.70.1", optional = true }
+cc = "1.2.0"
