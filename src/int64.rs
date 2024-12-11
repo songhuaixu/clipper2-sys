@@ -260,3 +260,31 @@ impl Paths64 {
         }
     }
 }
+
+// Area
+
+impl Path64 {
+
+    pub fn area(&self) -> f64 {
+        unsafe {
+            let path64_prt = self.get_clipper_path();
+            let reuslt = clipper_path64_area(path64_prt);
+            clipper_delete_path64(path64_prt);
+            reuslt
+        }
+    }
+
+}
+
+impl Paths64 {
+
+    pub fn area(&self) -> f64 {
+        unsafe {
+            let paths64_prt = self.get_clipper_paths();
+            let reuslt = clipper_paths64_area(paths64_prt);
+            clipper_delete_paths64(paths64_prt);
+            reuslt
+        }
+    }
+
+}

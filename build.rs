@@ -199,6 +199,12 @@ fn main() {
             .allowlist_function("clipper_pathsd_minkowski_sum")
             .allowlist_function("clipper_pathsd_minkowski_diff")
 
+            // Area
+            .allowlist_function("clipper_pathd_area")
+            .allowlist_function("clipper_path64_area")
+            .allowlist_function("clipper_pathsd_area")
+            .allowlist_function("clipper_paths64_area")
+
             .size_t_is_usize(true)
             .generate()
             .expect("unable to generate bindings");

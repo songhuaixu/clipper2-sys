@@ -266,3 +266,31 @@ impl PathsD {
         }
     }
 }
+
+// Area
+
+impl PathD {
+
+    pub fn area(&self) -> f64 {
+        unsafe {
+            let pathd_prt = self.get_clipper_path();
+            let reuslt = clipper_pathd_area(pathd_prt);
+            clipper_delete_pathd(pathd_prt);
+            reuslt
+        }
+    }
+
+}
+
+impl PathsD {
+
+    pub fn area(&self) -> f64 {
+        unsafe {
+            let pathsd_prt = self.get_clipper_paths();
+            let reuslt = clipper_pathsd_area(pathsd_prt);
+            clipper_delete_pathsd(pathsd_prt);
+            reuslt
+        }
+    }
+
+}
