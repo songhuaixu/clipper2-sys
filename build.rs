@@ -1,4 +1,14 @@
 use std::env;
+use std::process::{Command, Stdio};
+use std::fs::File;
+use std::io::{self, BufRead};
+use std::path::{Path,PathBuf};
+
+macro_rules! logMe {
+    ($($tokens: tt)*) => {
+        println!("cargo:warning={}", format!($($tokens)*))
+    }
+}
 
 fn main() {
     println!("cargo:rerun-if-changed=Clipper2");
@@ -6,11 +16,25 @@ fn main() {
         println!("cargo:rerun-if-changed=generated");
     }
 
-    cc::Build::new()
-        .cpp(true)
+    let extra_dir = if is_alpine_linux() {
+        Some(alpine_includes())
+    } else {
+        None
+    };
+    
+    let mut builder = cc::Build::new();
+
+    let mut build = builder.cpp(true)
         .opt_level(3)
         .include("clipper2c/vendor/Clipper2/CPP/Clipper2Lib/include/")
         // .include("clipper2c/vendor/Clipper2/CPP/Utils/")
+        ;
+
+        if let Some(dirs) = extra_dir {
+            build = build.includes(dirs);
+        }
+
+        build
         .include("clipper2c/include")
         .include("clipper2c/src")
         .files([
@@ -218,5 +242,46 @@ fn main() {
         bindings
             .write_to_file(out_path.join("bindings.rs"))
             .expect("couldn't write bindings!");
+    }
+}
+
+fn get_stdlib_version() -> Option<String> {
+    let mut cmd = Command::new("g++");
+    cmd.arg("-dumpversion");
+    let output = cmd.stderr(Stdio::inherit()).output().ok()?;
+    if output.status.code() != Some(0) {
+        return None;
+    }
+    match String::from_utf8(output.stdout).unwrap().trim() {
+        "" => None,
+        v => Some(String::from(v)),
+    }
+}
+
+fn is_alpine_linux() -> bool {
+    let path = Path::new("/etc/os-release");
+    if let Ok(file) = File::open(path) {
+        for line in io::BufReader::new(file).lines() {
+            if let Ok(content) = line {
+                if content.trim() == "ID=alpine" {
+                    return true;
+                }
+            }
+        }
+    }
+    false
+}
+
+fn alpine_includes() -> Vec<PathBuf> {
+    let arch = env::var("CARGO_CFG_TARGET_ARCH").unwrap();
+    match get_stdlib_version() {
+        None => {
+            logMe!("alpine: unable to determine g++ stdlib version");
+            vec![]
+        }
+        Some(cpp) => vec![
+            PathBuf::from(format!("-I/usr/include/c++/{cpp}")),
+            PathBuf::from(format!("-I/usr/include/c++/{cpp}/{arch}-alpine-linux-musl")),
+        ],
     }
 }
