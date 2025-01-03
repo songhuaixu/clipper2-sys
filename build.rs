@@ -289,6 +289,7 @@ fn alpine_includes() -> Vec<PathBuf> {
                     "/usr/{arch}-none-elf/include/c++/{cpp}/{arch}-none-elf"
                 )));
             }
+            list
         }
     }
 }
