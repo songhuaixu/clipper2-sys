@@ -280,8 +280,8 @@ fn alpine_includes() -> Vec<PathBuf> {
             vec![]
         }
         Some(cpp) => vec![
-            PathBuf::from(format!("-I/usr/include/c++/{cpp}")),
-            PathBuf::from(format!("-I/usr/include/c++/{cpp}/{arch}-alpine-linux-musl")),
+            PathBuf::from(format!("/usr/include/c++/{cpp}")),
+            PathBuf::from(format!("/usr/include/c++/{cpp}/{arch}-alpine-linux-musl")),
         ],
     }
 }
