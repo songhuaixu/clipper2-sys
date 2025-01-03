@@ -279,16 +279,9 @@ fn alpine_includes() -> Vec<PathBuf> {
             logMe!("alpine: unable to determine g++ stdlib version");
             vec![]
         }
-        Some(cpp) => {
-            let mut list = vec![
-                PathBuf::from(format!("/usr/include/c++/{cpp}")),
-                PathBuf::from(format!("/usr/include/c++/{cpp}/{arch}-alpine-linux-musl")),
-            ];
-            let additional_path = format!("/usr/{arch}-none-elf/include/c++/{cpp}/{arch}-none-elf");
-            if Path::new(&additional_path).is_dir() {
-                list.push(PathBuf::from(additional_path));
-            }
-            list
-        }
+        Some(cpp) => vec![
+            PathBuf::from(format!("/usr/include/c++/{cpp}")),
+            PathBuf::from(format!("/usr/include/c++/{cpp}/{arch}-alpine-linux-musl")),
+        ],
     }
 }
