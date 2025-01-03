@@ -283,7 +283,7 @@ fn alpine_includes() -> Vec<PathBuf> {
             let list = vec![
                 PathBuf::from(format!("/usr/include/c++/{cpp}")),
                 PathBuf::from(format!("/usr/include/c++/{cpp}/{arch}-alpine-linux-musl")),
-            ],
+            ];
             if Path::new(&format!("/usr/{arch}-none-elf/include/c++/{cpp}/{arch}-none-elf")).is_dir() {
                 list.push(PathBuf::from(format!(
                     "/usr/{arch}-none-elf/include/c++/{cpp}/{arch}-none-elf"
