@@ -52,7 +52,7 @@ impl PolyTreeD {
         self.is_hole
     }
 
-    pub fn get_hold_paths(&self) -> PathsD {
+    pub fn get_hole_paths(&self) -> PathsD {
         let mut paths = PathsD::new(&vec![]);
         for child in &self.childs {
             if child.is_hole {

@@ -47,7 +47,7 @@ impl PolyTree64 {
         self.is_hole
     }
 
-    pub fn get_hold_paths(&self) -> Paths64 {
+    pub fn get_hole_paths(&self) -> Paths64 {
         let mut paths = Paths64::new(&vec![]);
         for child in &self.childs {
             if child.is_hole {
