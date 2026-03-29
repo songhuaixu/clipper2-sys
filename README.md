@@ -1,113 +1,135 @@
 # clipper2-sys
 
-Rust bindings for **[Clipper2](https://github.com/AngusJohnson/Clipper2)** (C++), via [`cxx`](https://crates.io/crates/cxx): integer `Path64` / floating `PathD`, boolean clipping, offsetting, simplify, Minkowski, and lazy consumption of C++ path blobs.
+Rust bindings for [Clipper2](https://github.com/AngusJohnson/Clipper2) (C++) using [`cxx`](https://crates.io/crates/cxx).
 
----
+Provides integer `Path64` / `Paths64` with **Clipper64**, floating-point **PathD** / **PathsD** with **ClipperD**, **ClipperOffset**, boolean clipping, simplification, Minkowski operations, and lazy iteration over Clipper2 path blobs. Polygon hierarchy from `execute_tree` is consumed through **PolyCxxPreorderIter** preorder iterators without materializing a full Rust tree.
 
-## 简介（中文）
+## 中文简介
 
-本 crate 在 Rust 中封装 Clipper2 C++ 库：提供整数坐标 **Clipper64** 与双精度 **ClipperD**、路径偏移 **ClipperOffset**、以及与 C++ 侧一致的扁平路径缓冲 **`PathsBlob*`** 互转。多边形的树形结果通过 **`PolyCxxPreorderIter*`** 前序遍历消费，避免在 Rust 侧拷贝整棵树。
+本 crate 将 Clipper2 以 C++ 库形式接入 Rust：**Clipper64** 使用整数坐标，**ClipperD** 使用双精度坐标，并提供 **ClipperOffset** 做路径偏移。与 C++ 侧交换几何时使用扁平的 **PathsBlob** 缓冲；树形裁剪结果可通过 **PolyCxxPreorderIter** 前序遍历，避免在 Rust 中整棵拷贝多边形树。
 
----
+## Features
 
-## Requirements / 构建要求
+- Boolean clip on `Clipper64` / `ClipperD` (`Union`, `Intersection`, `Difference`, `Xor`, fill rules).
+- Offset / inflate helpers (`ClipperOffset`, `Paths64::inflate`).
+- `Path64` / `PathD` helpers: area, point-in-polygon, simplify, translate, `PathD` → `Path64` conversion.
+- Optional `execute_tree` + preorder iterator over the native `PolyPath` tree.
 
-- **Rust** 2021 edition  
-- **C++17** toolchain (`clang++` / `g++` / MSVC) for `cxx` and bundled Clipper2 sources  
-- On Linux you may need `libstdc++`; on macOS, `libc++`
+## Requirements
 
-## Build / 编译
+- **Rust** (edition 2021, as specified in `Cargo.toml`).
+- **C++17** toolchain (`clang++`, `g++`, or MSVC) for `cxx` and the bundled Clipper2 sources.
+- Linux: typically `libstdc++`; macOS: `libc++`.
+
+## Building
 
 ```bash
 cargo build
 cargo test
 ```
 
-Clipper2 C++ sources are compiled by `build.rs` together with `cpp/clipper2_sys_bridge.cpp`.
+Clipper2 sources are built from `build.rs` together with `cpp/clipper2_sys_bridge.cpp`.
 
----
+## Examples
 
-## Examples cookbook / 示例合集
-
-### `Clipper64`: union + lazy closed / 布尔并 + 惰性闭合解
+### Clipper64 — union and lazy closed solution
 
 ```rust
 use clipper2_sys::{
-    ClipType, Clipper64, FillRule, Paths64, Point64,
+    ClipType, Clipper64, FillRule, Path64, Paths64, Point64,
 };
-# use clipper2_sys::Path64;
-# fn square_i(x0: i64, y0: i64, s: i64) -> Path64 {
-#     Path64::new(vec![Point64::new(x0, y0), Point64::new(x0 + s, y0),
-#         Point64::new(x0 + s, y0 + s), Point64::new(x0, y0 + s)])
-# }
+
+let rect = |x0: i64, y0: i64, w: i64| {
+    Path64::new(vec![
+        Point64::new(x0, y0),
+        Point64::new(x0 + w, y0),
+        Point64::new(x0 + w, y0 + w),
+        Point64::new(x0, y0 + w),
+    ])
+};
 
 let mut clip = Clipper64::new();
-clip.add_subject(&Paths64::new(vec![square_i(0, 0, 100)]));
-clip.add_clip(&Paths64::new(vec![square_i(50, 50, 100)]));
+clip.add_subject(&Paths64::new(vec![rect(0, 0, 100)]));
+clip.add_clip(&Paths64::new(vec![rect(50, 50, 100)]));
 let sol = clip.execute(ClipType::Union, FillRule::NonZero);
 let (closed, _open) = sol.into_lazy();
 assert!(!closed.is_empty());
 ```
 
-### `Clipper64`: iterate closed paths / 逐条遍历闭合路径
+### Clipper64 — collect closed and open paths
 
 ```rust
 use clipper2_sys::{
     ClipType, Clipper64, FillRule, Path64, Paths64, Point64,
 };
-# fn square_i(x0: i64, y0: i64, s: i64) -> Path64 {
-#     Path64::new(vec![Point64::new(x0, y0), Point64::new(x0 + s, y0),
-#         Point64::new(x0 + s, y0 + s), Point64::new(x0, y0 + s)])
-# }
+
+let rect = |x0: i64, y0: i64, w: i64| {
+    Path64::new(vec![
+        Point64::new(x0, y0),
+        Point64::new(x0 + w, y0),
+        Point64::new(x0 + w, y0 + w),
+        Point64::new(x0, y0 + w),
+    ])
+};
 
 let mut clip = Clipper64::new();
-clip.add_subject(&Paths64::new(vec![square_i(0, 0, 100)]));
-clip.add_clip(&Paths64::new(vec![square_i(50, 50, 100)]));
+clip.add_subject(&Paths64::new(vec![rect(0, 0, 100)]));
+clip.add_clip(&Paths64::new(vec![rect(50, 50, 100)]));
 let sol = clip.execute(ClipType::Union, FillRule::NonZero);
 let all: Paths64 = sol.iter_closed().chain(sol.iter_open()).collect();
 assert!(!all.is_empty());
 ```
 
-### `Clipper64`: `execute_tree` + preorder on `PolyPath` / 树形解与前序遍历
+### Clipper64 — `execute_tree` and `PolyPath` preorder
 
 ```rust
 use clipper2_sys::{
     ClipType, Clipper64, FillRule, Path64, Paths64, Point64,
 };
-# fn square_i(x0: i64, y0: i64, s: i64) -> Path64 {
-#     Path64::new(vec![Point64::new(x0, y0), Point64::new(x0 + s, y0),
-#         Point64::new(x0 + s, y0 + s), Point64::new(x0, y0 + s)])
-# }
+
+let rect = |x0: i64, y0: i64, w: i64| {
+    Path64::new(vec![
+        Point64::new(x0, y0),
+        Point64::new(x0 + w, y0),
+        Point64::new(x0 + w, y0 + w),
+        Point64::new(x0, y0 + w),
+    ])
+};
 
 let mut clip = Clipper64::new();
-clip.add_subject(&Paths64::new(vec![square_i(0, 0, 100)]));
-clip.add_clip(&Paths64::new(vec![square_i(50, 50, 100)]));
+clip.add_subject(&Paths64::new(vec![rect(0, 0, 100)]));
+clip.add_clip(&Paths64::new(vec![rect(50, 50, 100)]));
 let sol = clip.execute_tree(ClipType::Union, FillRule::NonZero);
 let (_open_lazy, preorder) = sol.into_open_and_poly_preorder();
 let n = preorder.count();
 assert!(n > 0);
 ```
 
-### `ClipperD`: union / 双精度布尔并
+### ClipperD — union
 
 ```rust
 use clipper2_sys::{
     ClipType, ClipperD, FillRule, PathD, PathsD, PointD,
 };
-# fn square_f(x0: f64, y0: f64, s: f64) -> PathD {
-#     PathD::new(vec![PointD::new(x0, y0), PointD::new(x0 + s, y0),
-#         PointD::new(x0 + s, y0 + s), PointD::new(x0, y0 + s)])
-# }
+
+let rect = |x0: f64, y0: f64, w: f64| {
+    PathD::new(vec![
+        PointD::new(x0, y0),
+        PointD::new(x0 + w, y0),
+        PointD::new(x0 + w, y0 + w),
+        PointD::new(x0, y0 + w),
+    ])
+};
 
 let mut clip = ClipperD::new(4);
-clip.add_subject(&PathsD::new(vec![square_f(0.0, 0.0, 100.0)]));
-clip.add_clip(&PathsD::new(vec![square_f(50.0, 50.0, 100.0)]));
+clip.add_subject(&PathsD::new(vec![rect(0.0, 0.0, 100.0)]));
+clip.add_clip(&PathsD::new(vec![rect(50.0, 50.0, 100.0)]));
 let sol = clip.execute(ClipType::Union, FillRule::NonZero);
 let (closed, _open) = sol.into_lazy();
 assert!(!closed.is_empty());
 ```
 
-### `ClipperOffset`: inflate a square / 方形外扩
+### ClipperOffset — inflate a square
 
 ```rust
 use clipper2_sys::{ClipperOffset, EndType, JoinType, Path64, Point64};
@@ -124,7 +146,7 @@ let out = co.execute(10.0);
 assert!(!out.is_empty());
 ```
 
-### `Path64`: area, point-in-polygon, translate, simplify / 面积、点包含、平移、简化
+### Path64 — area, point-in-polygon, translate, simplify
 
 ```rust
 use clipper2_sys::{Path64, Point64, PointInPolygonResult};
@@ -152,7 +174,7 @@ let simp = collinear.simplify(1.0, false);
 assert!(simp.into_first_path().len() <= collinear.len());
 ```
 
-### `Paths64`: inflate (offset helper) / 多路径偏移
+### Paths64 — inflate helper
 
 ```rust
 use clipper2_sys::{EndType, JoinType, Path64, Paths64, Point64};
@@ -167,26 +189,31 @@ let grown = paths.inflate(10.0, JoinType::MiterJoin, EndType::PolygonEnd, 2.0);
 assert!(!grown.is_empty());
 ```
 
-### `Path64` / `Paths64`: Minkowski sum / 闵可夫斯基和
+### Path64 and Paths64 — Minkowski sum
 
 ```rust
 use clipper2_sys::{FillRule, Path64, Paths64, Point64};
-# fn square_i(x0: i64, y0: i64, s: i64) -> Path64 {
-#     Path64::new(vec![Point64::new(x0, y0), Point64::new(x0 + s, y0),
-#         Point64::new(x0 + s, y0 + s), Point64::new(x0, y0 + s)])
-# }
 
-let a = square_i(0, 0, 50);
-let b = square_i(0, 0, 30);
+let rect = |x0: i64, y0: i64, w: i64| {
+    Path64::new(vec![
+        Point64::new(x0, y0),
+        Point64::new(x0 + w, y0),
+        Point64::new(x0 + w, y0 + w),
+        Point64::new(x0, y0 + w),
+    ])
+};
+
+let a = rect(0, 0, 50);
+let b = rect(0, 0, 30);
 let ms = a.minkowski_sum(&b, true);
 assert!(!ms.is_empty());
 
-let many = Paths64::new(vec![square_i(0, 0, 40)]);
+let many = Paths64::new(vec![rect(0, 0, 40)]);
 let ms2 = many.minkowski_sum(&b, true, FillRule::NonZero.into());
 assert!(!ms2.is_empty());
 ```
 
-### `PathD` ↔ `Path64`: simplify and convert / 双精度简化与转整型
+### PathD — simplify and convert to Path64
 
 ```rust
 use clipper2_sys::{LazyPaths64, PathD, PointD};
@@ -202,72 +229,88 @@ let _: LazyPaths64 = p.to_path64();
 assert!(simplified.into_first_path().len() <= p.len());
 ```
 
-### `ClipSolution`: `to_closed` / 物化全部闭合多边形
+### ClipSolution64 — materialize closed paths
 
 ```rust
 use clipper2_sys::{
     ClipType, Clipper64, FillRule, Path64, Paths64, Point64,
 };
-# fn square_i(x0: i64, y0: i64, s: i64) -> Path64 {
-#     Path64::new(vec![Point64::new(x0, y0), Point64::new(x0 + s, y0),
-#         Point64::new(x0 + s, y0 + s), Point64::new(x0, y0 + s)])
-# }
+
+let rect = |x0: i64, y0: i64, w: i64| {
+    Path64::new(vec![
+        Point64::new(x0, y0),
+        Point64::new(x0 + w, y0),
+        Point64::new(x0 + w, y0 + w),
+        Point64::new(x0, y0 + w),
+    ])
+};
 
 let mut clip = Clipper64::new();
-clip.add_subject(&Paths64::new(vec![square_i(0, 0, 100)]));
-clip.add_clip(&Paths64::new(vec![square_i(50, 50, 100)]));
+clip.add_subject(&Paths64::new(vec![rect(0, 0, 100)]));
+clip.add_clip(&Paths64::new(vec![rect(50, 50, 100)]));
 let sol = clip.execute(ClipType::Union, FillRule::NonZero);
 let closed: Paths64 = sol.to_closed();
 assert!(!closed.is_empty());
 ```
 
-### `ClipTreeSolution`: open-only shortcut / 只要开放解
+### ClipTreeSolution64 — open paths only (drop polygon tree)
 
 ```rust
 use clipper2_sys::{
     ClipType, Clipper64, FillRule, Path64, Paths64, Point64,
 };
-# fn square_i(x0: i64, y0: i64, s: i64) -> Path64 {
-#     Path64::new(vec![Point64::new(x0, y0), Point64::new(x0 + s, y0),
-#         Point64::new(x0 + s, y0 + s), Point64::new(x0, y0 + s)])
-# }
+
+let rect = |x0: i64, y0: i64, w: i64| {
+    Path64::new(vec![
+        Point64::new(x0, y0),
+        Point64::new(x0 + w, y0),
+        Point64::new(x0 + w, y0 + w),
+        Point64::new(x0, y0 + w),
+    ])
+};
 
 let mut clip = Clipper64::new();
-clip.add_subject(&Paths64::new(vec![square_i(0, 0, 100)]));
-clip.add_clip(&Paths64::new(vec![square_i(50, 50, 100)]));
+clip.add_subject(&Paths64::new(vec![rect(0, 0, 100)]));
+clip.add_clip(&Paths64::new(vec![rect(50, 50, 100)]));
 let sol = clip.execute_tree(ClipType::Union, FillRule::NonZero);
 let _open = sol.into_open_lazy();
 ```
 
-### Module map / 模块结构
+## Module overview
 
-- **`clipper64`** (`src/clipper64/`, types re-exported at crate root) — integer paths and **`Clipper64`**. / 整数路径与 **`Clipper64`**。
-- **`clipperd`** — double paths and **`ClipperD`**. / 双精度路径与 **`ClipperD`**。
-- **`ClipperOffset`** — path offset (inflate/deflate). / 路径偏移。
+| Area | Contents |
+|------|----------|
+| **clipper64** (`src/clipper64/`) | `Point64`, `Path64`, `Paths64`, `Clipper64` (re-exported at crate root). |
+| **clipperd** (`src/clipperd/`) | `PointD`, `PathD`, `PathsD`, `ClipperD`. |
+| **offset** | `ClipperOffset` for path offset on `Path64`. |
+| **poly_path** | `PolyCxxPreorderIter64` / `PolyCxxPreorderIterD` for native `PolyPath` preorder. |
+| **paths_blob** | Conversions between `PathsBlob*` and Rust path types. |
+| **cxx_bridge** | `cxx::bridge` definitions and FFI to `cpp/`. |
 
----
-
-## Crate layout / 源代码布局
+## Repository layout
 
 | Path | Role |
 |------|------|
-| `src/lib.rs` | Shared enums (`FillRule`, `ClipType`, …), re-exports / 公共枚举与再导出 |
-| `src/cxx_bridge.rs` | `cxx::bridge` shared types and extern C++ API / cxx 共享类型与 FFI |
-| `src/paths_blob.rs` | `PathsBlob64`/`PathsBlobD` ↔ `Path*` / 扁平路径缓冲转换 |
-| `src/clipper64/` | `Point64`, `Path64`, `Paths64`, `Clipper64`, … / 整数流水线 |
-| `src/clipperd/` | `PointD`, `PathD`, `PathsD`, `ClipperD`, … / 双精度流水线 |
-| `src/offset.rs` | `ClipperOffset` (inflate/deflate on `Path64`) / 路径偏移 |
-| `src/poly_path.rs` | Preorder iterators over C++ `PolyPath*` / C++ 多边形树前序迭代 |
-| `src/macros.rs` | Internal `macro_rules!` for shared path logic / 内部宏 |
-| `cpp/` | C++ bridge implementation / C++ 桥接实现 |
+| `src/lib.rs` | Crate root: shared enums, re-exports, documentation. |
+| `src/cxx_bridge.rs` | `cxx::bridge` types and `extern "C++"` API. |
+| `src/paths_blob.rs` | `PathsBlob64` / `PathsBlobD` ↔ `Path64` / `PathD`. |
+| `src/clipper64/` | Integer coordinate pipeline. |
+| `src/clipperd/` | Double-precision pipeline. |
+| `src/offset.rs` | `ClipperOffset`. |
+| `src/poly_path.rs` | Preorder iterators for C++ `PolyPath`. |
+| `src/macros.rs` | Shared `macro_rules!` for paths and blobs. |
+| `cpp/` | C++ bridge (`clipper2_sys_bridge`). |
 
----
+## Related projects
 
-## Related / 相关项目
-
-- Upstream: [Clipper2](https://github.com/AngusJohnson/Clipper2) (C++)  
-- Prior art: [clipper-sys](https://crates.io/crates/clipper-sys) (Clipper1), [clipper2c](https://github.com/geoffder/clipper2c) (C layer)
+- [Clipper2](https://github.com/AngusJohnson/Clipper2) (upstream C++).
+- [clipper-sys](https://crates.io/crates/clipper-sys) (Clipper1 bindings).
+- [clipper2c](https://github.com/geoffder/clipper2c) (C layer for Clipper2).
 
 ## License
 
-MIT — see upstream Clipper2 for its license. Clipper2 上游许可证请参阅其仓库。
+This crate is licensed under the **MIT License** (see `LICENSE` in this repository).
+
+The bundled **Clipper2** C++ library has its own license; refer to the [Clipper2 repository](https://github.com/AngusJohnson/Clipper2) for upstream terms.
+
+本仓库中的 Rust 绑定以 MIT 授权；**Clipper2** 上游 C++ 库的许可请以官方仓库为准。
