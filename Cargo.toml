@@ -1,22 +1,18 @@
 [package]
 name = "clipper2-sys"
-version = "0.5.0"
+version = "1.0.0"
 authors = ["songhuaixu <songhuaixu@gmail.com>"]
 edition = "2021"
-license = "ISC"
+license = "MIT"
 readme = "README.md"
 repository = "https://github.com/songhuaixu/clipper2-sys"
+documentation = "https://docs.rs/clipper2-sys"
 description = "Polygon Clipping and Offsetting (Clipper2 wrapper)"
 keywords = ["polygon", "boolean", "clip", "offset", "clipper2"]
 categories = ["algorithms", "external-ffi-bindings"]
 
-[features]
-generate-bindings = [ "bindgen"]
-update-bindings = [ "generate-bindings"]
-
 [dependencies]
-libc = "0.2.169"
+cxx = "1"
 
 [build-dependencies]
-bindgen = { version = "0.71.1", optional = true }
-cc = "1.2.13"
+cxx-build = "1"
